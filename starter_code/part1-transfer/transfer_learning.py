@@ -88,9 +88,9 @@ model.classifier = classifier
 # 4. train_lr_scheduler
 
 #<<<YOUR CODE HERE>>>
-num_epochs = 1
+num_epochs = 5
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.classifier.parameters(), lr=0.001)
+optimizer = optim.Adam(model.classifier.parameters(), lr=0.1)
 train_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size= 1, gamma=0.5)
 
 
