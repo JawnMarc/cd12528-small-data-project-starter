@@ -20,7 +20,7 @@ std = [0.229, 0.224, 0.225]
 
 #Set up Transforms (train, val, and test)
 train_transform = transforms.Compose([
-    transforms.RandomResizedCrop(),
+    transforms.RandomResizedCrop(224),
     transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
     transforms.Normalize(mean, std)
@@ -89,7 +89,7 @@ model.classifier = classifier
 
 #<<<YOUR CODE HERE>>>
 num_epochs = 1
-criterion = nn.CrossEntropy()
+criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.classifier.parameters(), lr=0.001)
 train_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size= 1, gamma=0.5)
 
@@ -99,7 +99,6 @@ train_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size= 1, gamma=0.5)
 def main():
   trained_model = train_model(model, criterion, optimizer, train_lr_scheduler, train_loader, valid_loader, num_epochs=num_epochs)
   test_model(test_loader, trained_model, class_names)
-
 
 
 if __name__ == '__main__':
