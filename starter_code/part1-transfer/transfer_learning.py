@@ -5,8 +5,10 @@
 import os
 
 import torch
-import torch.nn as nn
-import torch.optim as optim
+# import torch.nn as nn
+from torch import nn
+# import torch.optim as optim
+from torch import optim
 from torch.optim import lr_scheduler
 from torchvision import datasets, transforms
 from TrainModel import train_model
@@ -36,7 +38,7 @@ val_test_transform = transforms.Compose([
 
 # Set up DataLoaders (train, val, and test)
 batch_size = 10
-num_workers = 4
+num_workers = 2
 
 # <<<YOUR CODE HERE>>>
 # hint, create a variable that contains the class_names. You can get them from the ImageFolder
@@ -72,16 +74,18 @@ model = models.vgg16(weights='DEFAULT')
 for param in model.parameters():
     model.requires_grad = False
 
+in_feat = model.classifier[6].in_features
+
 # design custom classifier
 classifier = nn.Sequential(
-    nn.Linear(25088, 4096),
+    nn.Linear(in_feat, 4096),
     nn.ReLU(),
     nn.Dropout(0.5),
     nn.Linear(4096, 3)
 )
 
 # replace pre-trained classifier
-model.classifier = classifier
+model.classifier[6] = classifier
 
 
 # Train model with these hyperparameters
@@ -91,9 +95,9 @@ model.classifier = classifier
 # 4. train_lr_scheduler
 
 # <<<YOUR CODE HERE>>>
-num_epochs = 3
+num_epochs = 5
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.classifier.parameters(), lr=0.1)
+optimizer = optim.Adam(model.classifier.parameters(), lr=0.0004)
 train_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.5)
 
 
