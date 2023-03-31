@@ -132,6 +132,8 @@ def main():
     df = pd.read_csv(DATA_PATH)
 
     # Split the data out with loan status = 1
+    target = df['Loan Status']
+    target.head()
 
     # Create DataLoaders for training and validation 
     trainset = DataBuilder(DATA_PATH, train=True)
@@ -141,14 +143,35 @@ def main():
     validloader = DataLoader(validset, batch_size=512)
 
     # Train and validate the model 
+    D_in = trainset.x.shape[1]
+    model = Autoencoder(D_in)
+    model.to(device)
+
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
+    criterion = CustomLoss()
+
+    num_epochs = 1000
+    for epoch in range(1, num_epochs):
+        model.train()
+        loss = 0
+
+        for label, data in trainloader:
+            pass
+        print('Train phase started')
+
+
+
+
+
+
 
     # scaler = trainloader.dataset.standardizer
     #fake_data = generate_fake(mu, logvar, 50000, scaler, model)
 
     # Combine the new data with original dataset
 
-    DATA_PATH = 'data/loan_continuous_expanded.csv'
-    test_model(DATA_PATH)
+    # DATA_PATH = 'data/loan_continuous_expanded.csv'
+    # test_model(DATA_PATH)
 
 if __name__ == '__main__':
     main()
