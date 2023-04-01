@@ -156,11 +156,17 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=0.0001)
     criterion = CustomLoss()
 
-    num_epochs = 1000
+    num_epochs = 100
 
     def train_and_validate():
+        
+        mu_record = []
+        logvar_record = []
         print('Train and validation loop activated')
+
         for epoch in range(1, num_epochs):
+            ### model training ###
+            ######################
             model.train()
             train_loss = 0
 
@@ -168,33 +174,58 @@ def main():
                 data = data.to(device)
                 optimizer.zero_grad()
 
-                recon_batch, mu, logvar = model(data)
-                loss = criterion(recon_batch, data, mu, logvar)
+                reparam_x, mu, logvar = model(data)                                
+                loss = criterion(reparam_x, data, mu, logvar)
                 loss.backward()
 
                 train_loss += loss.item()
                 optimizer.step()
+
+                # store mu, logvar to list
+                mu_record.append(mu)
+                logvar_record.append(logvar)
+                mu_record_list = torch.cat(mu_record, dim=0)  # concat row-wise
+                logvar_record_list = torch.cat(logvar_record, dim=0) # concat row-wise
+
+            ### model evaluation ###
+            ########################
+            model.eval()
+            val_loss = 0
+            for _, val_data in enumerate(validloader):
+                val_data = val_data.to(device)
+                optimizer.zero_grad()
+
+                reparam_xval, val_mu, val_logvar  = model(val_data)
+                vloss = criterion(reparam_xval, val_data, val_mu, val_logvar)
+                vloss.backward()
+
+                val_loss += vloss.item()
+                optimizer.step()
         
             if epoch % 100 == 0:
-                print(f'Epoch: {epoch}/{num_epochs}: \tTrain Loss: {train_loss/len(trainloader.dataset)}')
+                print(f'Epoch: {epoch}/{num_epochs}: \tTrain Loss: {train_loss/len(trainloader.dataset)} \t\Valid Loss: {val_loss/len(validloader.dataset)}')
+
+        return mu_record_list, logvar_record_list
 
 
-    train_and_validate()
+    mu_record, logvar_record = train_and_validate()
 
-    # scaler = trainloader.dataset.standardizer
-    # fake_data = generate_fake(mu, logvar, 50000, scaler, model)
+    # print(mu_record.shape)
+
+    scaler = trainloader.dataset.standardizer   
+    fake_data = generate_fake(mu_record, logvar_record, 50000, scaler, model)
 
 
     # Combine the new data with original dataset
-    # DATA_PATH = 'data/loan_continuous_expanded.csv'
-    # df.to_csv(DATA_PATH)
+    NEW_DATA_PATH = 'data/loan_continuous_expanded.csv'
+    df.to_csv(NEW_DATA_PATH)
 
-    # with open(DATA_PATH, 'a') as record:
-    #     write = csv.writer(record)
-    #     write.writerows(fake_data)
+    with open(NEW_DATA_PATH, 'a') as record:
+        write = csv.writer(record)
+        write.writerows(fake_data)
 
-
-    # test_model(DATA_PATH)
+    # baseline precision, recall & f1 on updated loan_continuous.csv
+    test_model(NEW_DATA_PATH)
 
 if __name__ == '__main__':
     main()
