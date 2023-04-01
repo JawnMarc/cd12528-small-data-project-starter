@@ -37,8 +37,9 @@ val_test_transform = transforms.Compose([
 ])
 
 # Set up DataLoaders (train, val, and test)
-batch_size = 32
-num_workers = 2
+batch_size = 64
+valid_batch_size = 32
+num_workers = 4
 
 # <<<YOUR CODE HERE>>>
 # hint, create a variable that contains the class_names. You can get them from the ImageFolder
@@ -55,9 +56,9 @@ testset = datasets.ImageFolder(test_dir, transform=val_test_transform)
 train_loader = torch.utils.data.DataLoader(
     trainset, batch_size=batch_size, num_workers=num_workers)
 valid_loader = torch.utils.data.DataLoader(
-    validset, batch_size=batch_size, num_workers=num_workers)
+    validset, batch_size=valid_batch_size, num_workers=num_workers)
 test_loader = torch.utils.data.DataLoader(
-    testset, batch_size=batch_size, num_workers=num_workers)
+    testset, batch_size=valid_batch_size, num_workers=num_workers)
 
 class_names = trainset.classes
 
@@ -77,14 +78,15 @@ for param in model.parameters():
 
 # in_feat = model.classifier[6].in_features
 in_feat = model.fc.in_features
-hidden_unit = 512
+hidden_layer = 512
+# hidden_layer_2 = 512
 
 # design custom classifier
 classifier = nn.Sequential(
-    nn.Linear(in_feat, hidden_unit),
+    nn.Linear(in_feat, hidden_layer),
+    nn.Dropout(0.5),
     nn.ReLU(),
-    nn.Dropout(0.6),
-    nn.Linear(hidden_unit, 3)
+    nn.Linear(hidden_layer, 3)
 )
 
 # replace pre-trained classifier
@@ -99,10 +101,10 @@ model.fc = classifier
 # 4. train_lr_scheduler
 
 # <<<YOUR CODE HERE>>>
-num_epochs = 5
+num_epochs = 8
 criterion = nn.CrossEntropyLoss()
 # optimizer = optim.Adam(model.classifier.parameters(), lr=0.0004)
-optimizer = optim.Adam(model.fc.parameters(), lr=0.001)
+optimizer = optim.Adam(model.fc.parameters(), lr=0.0005)
 train_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.5)
 
 

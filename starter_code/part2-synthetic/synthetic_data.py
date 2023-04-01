@@ -134,7 +134,7 @@ def main():
     df = pd.read_csv(DATA_PATH)
 
     # baseline precision, recall & f1 on loan_continuous.csv
-    test_model(DATA_PATH)
+    # test_model(DATA_PATH)
 
     # Split the data out with loan status = 1
     loan_status_1 = df[df['Loan Status'] == 1]
@@ -159,6 +159,7 @@ def main():
     num_epochs = 1000
 
     def train_and_validate():
+        print('Train and validation loop activated')
         for epoch in range(1, num_epochs):
             model.train()
             train_loss = 0
@@ -173,30 +174,27 @@ def main():
 
                 train_loss += loss.item()
                 optimizer.step()
+        
+            if epoch % 100 == 0:
+                print(f'Epoch: {epoch}/{num_epochs}: \tTrain Loss: {train_loss/len(trainloader.dataset)}')
 
 
+    train_and_validate()
 
-
-
-                print('Train phase started')
-
-
-
-
-    scaler = trainloader.dataset.standardizer
-    fake_data = generate_fake(mu, logvar, 50000, scaler, model)
+    # scaler = trainloader.dataset.standardizer
+    # fake_data = generate_fake(mu, logvar, 50000, scaler, model)
 
 
     # Combine the new data with original dataset
-    DATA_PATH = 'data/loan_continuous_expanded.csv'
-    df.to_csv(DATA_PATH)
+    # DATA_PATH = 'data/loan_continuous_expanded.csv'
+    # df.to_csv(DATA_PATH)
 
-    with open(DATA_PATH, 'a') as record:
-        write = csv.writer(record)
-        write.writerows(fake_data)
+    # with open(DATA_PATH, 'a') as record:
+    #     write = csv.writer(record)
+    #     write.writerows(fake_data)
 
 
-    test_model(DATA_PATH)
+    # test_model(DATA_PATH)
 
 if __name__ == '__main__':
     main()
