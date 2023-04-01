@@ -134,7 +134,8 @@ def main():
     df = pd.read_csv(DATA_PATH)
 
     # baseline precision, recall & f1 on loan_continuous.csv
-    # test_model(DATA_PATH)
+    print(f'BASELINE MODEL ON PRECISION, RECALL AND F1:')
+    test_model(DATA_PATH)
 
     # Split the data out with loan status = 1
     loan_status_1 = df[df['Loan Status'] == 1]
@@ -225,6 +226,7 @@ def main():
         write.writerows(fake_data)
 
     # baseline precision, recall & f1 on updated loan_continuous.csv
+    print(f'UPDATED DATA BASELINE MODEL ON PRECISION, RECALL AND F1:')
     test_model(NEW_DATA_PATH)
 
 if __name__ == '__main__':
