@@ -1,6 +1,8 @@
 from TestModel import test_model
 import pandas as pd
 import numpy as np
+import csv
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -128,12 +130,16 @@ def main():
     # Get a device and set up data paths. You need paths for the original data, the data with just loan status = 1 and the new augmented dataset.
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
-    DATA_PATH = 'data/loan_continuous_expanded.csv'
+    DATA_PATH = 'data/loan_continuous.csv'
     df = pd.read_csv(DATA_PATH)
 
+    # baseline precision, recall & f1 on loan_continuous.csv
+    test_model(DATA_PATH)
+
     # Split the data out with loan status = 1
-    target = df['Loan Status']
-    target.head()
+    loan_status_1 = df[df['Loan Status'] == 1]
+    print(loan_status_1.head())
+    # print(loan_status_1.describe())
 
     # Create DataLoaders for training and validation 
     trainset = DataBuilder(DATA_PATH, train=True)
@@ -151,27 +157,46 @@ def main():
     criterion = CustomLoss()
 
     num_epochs = 1000
-    for epoch in range(1, num_epochs):
-        model.train()
-        loss = 0
 
-        for label, data in trainloader:
-            pass
-        print('Train phase started')
+    def train_and_validate():
+        for epoch in range(1, num_epochs):
+            model.train()
+            train_loss = 0
+
+            for _, data in enumerate(trainloader):
+                data = data.to(device)
+                optimizer.zero_grad()
+
+                recon_batch, mu, logvar = model(data)
+                loss = criterion(recon_batch, data, mu, logvar)
+                loss.backward()
+
+                train_loss += loss.item()
+                optimizer.step()
 
 
 
 
 
+                print('Train phase started')
 
 
-    # scaler = trainloader.dataset.standardizer
-    #fake_data = generate_fake(mu, logvar, 50000, scaler, model)
+
+
+    scaler = trainloader.dataset.standardizer
+    fake_data = generate_fake(mu, logvar, 50000, scaler, model)
+
 
     # Combine the new data with original dataset
+    DATA_PATH = 'data/loan_continuous_expanded.csv'
+    df.to_csv(DATA_PATH)
 
-    # DATA_PATH = 'data/loan_continuous_expanded.csv'
-    # test_model(DATA_PATH)
+    with open(DATA_PATH, 'a') as record:
+        write = csv.writer(record)
+        write.writerows(fake_data)
+
+
+    test_model(DATA_PATH)
 
 if __name__ == '__main__':
     main()
