@@ -157,7 +157,7 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=0.0001)
     criterion = CustomLoss()
 
-    num_epochs = 100
+    num_epochs = 1000
 
     def train_and_validate():
         
