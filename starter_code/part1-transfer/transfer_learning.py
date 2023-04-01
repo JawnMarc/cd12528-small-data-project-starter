@@ -37,7 +37,7 @@ val_test_transform = transforms.Compose([
 ])
 
 # Set up DataLoaders (train, val, and test)
-batch_size = 10
+batch_size = 32
 num_workers = 2
 
 # <<<YOUR CODE HERE>>>
@@ -68,24 +68,28 @@ class_names = trainset.classes
 # 3. Replace top layer classifier with a classifer for our 3 categories
 
 # <<<YOUR CODE HERE>>>
-model = models.vgg16(weights='DEFAULT')
+# model = models.vgg16(weights='DEFAULT')
+model = models.resnet50(weights='DEFAULT')
 
 # freeze fc layer
 for param in model.parameters():
     model.requires_grad = False
 
-in_feat = model.classifier[6].in_features
+# in_feat = model.classifier[6].in_features
+in_feat = model.fc.in_features
+hidden_unit = 512
 
 # design custom classifier
 classifier = nn.Sequential(
-    nn.Linear(in_feat, 4096),
+    nn.Linear(in_feat, hidden_unit),
     nn.ReLU(),
-    nn.Dropout(0.5),
-    nn.Linear(4096, 3)
+    nn.Dropout(0.6),
+    nn.Linear(hidden_unit, 3)
 )
 
 # replace pre-trained classifier
-model.classifier[6] = classifier
+# model.classifier[6] = classifier
+model.fc = classifier
 
 
 # Train model with these hyperparameters
@@ -97,7 +101,8 @@ model.classifier[6] = classifier
 # <<<YOUR CODE HERE>>>
 num_epochs = 5
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.classifier.parameters(), lr=0.0004)
+# optimizer = optim.Adam(model.classifier.parameters(), lr=0.0004)
+optimizer = optim.Adam(model.fc.parameters(), lr=0.001)
 train_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.5)
 
 
