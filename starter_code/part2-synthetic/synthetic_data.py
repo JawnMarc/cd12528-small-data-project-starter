@@ -204,7 +204,7 @@ def main():
                 optimizer.step()
         
             if epoch % 100 == 0:
-                print(f'Epoch: {epoch}/{num_epochs}: \tTrain Loss: {train_loss/len(trainloader.dataset)} \t\Valid Loss: {val_loss/len(validloader.dataset)}')
+                print(f'Epoch: {epoch}/{num_epochs}: \tTrain Loss: {train_loss/len(trainloader.dataset)} \tValid Loss: {val_loss/len(validloader.dataset)}')
 
         return mu_record_list, logvar_record_list
 
@@ -226,7 +226,7 @@ def main():
         write.writerows(fake_data)
 
     # baseline precision, recall & f1 on updated loan_continuous.csv
-    print(f'UPDATED DATA BASELINE MODEL ON PRECISION, RECALL AND F1:')
+    print('UPDATED DATA BASELINE MODEL ON PRECISION, RECALL AND F1:')
     test_model(NEW_DATA_PATH)
 
 if __name__ == '__main__':
